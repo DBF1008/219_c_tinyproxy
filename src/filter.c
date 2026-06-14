@@ -42,6 +42,16 @@ struct filter_list {
                 regex_t cpatb;
                 char *pattern;
         } u;
+        /*
+         * Which union member above is in use, captured when the entry was
+         * built.  filter_destroy()/filter_run() must rely on this rather than
+         * the live config->filter_opts: a SIGHUP reload can switch the filter
+         * type and install the new config (see reload_config() in main.c)
+         * before the old list is torn down by filter_reload().  Interpreting an
+         * old entry through the new type frees/reads the wrong union member and
+         * corrupts the heap.
+         */
+        int is_fnmatch;
 };
 
 static sblist *fl = NULL;
@@ -108,7 +118,9 @@ void filter_init (void)
                 if (!fl) fl = sblist_new(sizeof(struct filter_list),
                                          4096/sizeof(struct filter_list));
 
-                if (config->filter_opts & FILTER_OPT_TYPE_FNMATCH) {
+                fe.is_fnmatch =
+                    !!(config->filter_opts & FILTER_OPT_TYPE_FNMATCH);
+                if (fe.is_fnmatch) {
                         fe.u.pattern = safestrdup(s);
                         if (!fe.u.pattern) goto oom;
                 } else {
@@ -149,7 +161,7 @@ void filter_destroy (void)
                 if (fl) {
                         for (i = 0; i < sblist_getsize(fl); ++i) {
                                 p = sblist_get(fl, i);
-                                if (config->filter_opts & FILTER_OPT_TYPE_FNMATCH)
+                                if (p->is_fnmatch)
                                         safefree(p->u.pattern);
                                 else
                                         regfree (&p->u.cpatb);
@@ -185,7 +197,7 @@ int filter_run (const char *str)
 
         for (i = 0; i < sblist_getsize(fl); ++i) {
                 p = sblist_get(fl, i);
-                if (config->filter_opts & FILTER_OPT_TYPE_FNMATCH)
+                if (p->is_fnmatch)
                         result = fnmatch (p->u.pattern, str, 0);
                 else
                         result =
