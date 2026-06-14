@@ -1313,24 +1313,39 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 			return -1;
 		if (2 != safe_read(connptr->server_fd, buff, 2))
 			return -1;
-		if (buff[0] != 5 || (buff[1] != 0 && buff[1] != 2))
+		if (buff[0] != 5)
 			return -1;
 
 		if (buff[1] == 2) {
-			/* authentication */
+			/* The server selected username/password
+			 * authentication (RFC 1929).  Only proceed if we
+			 * actually advertised it, i.e. we have credentials;
+			 * a server selecting a method we never offered is a
+			 * protocol violation. */
 			char in[2];
 			char out[515];
 			char *cur = out;
-			size_t c;
-			*cur++ = 1;	/* version */
-			c = ulen & 0xFF;
-			*cur++ = c;
-			memcpy(cur, cur_upstream->ua.user, c);
-			cur += c;
-			c = passlen & 0xFF;
-			*cur++ = c;
-			memcpy(cur, cur_upstream->pass, c);
-			cur += c;
+
+			if (!ulen)
+				return -1;
+
+			/* The username and password are each written into a
+			 * field prefixed by a single length octet, so neither
+			 * may exceed 255 bytes.  This is enforced when the
+			 * upstream is parsed; re-check here so an over-long
+			 * credential fails cleanly instead of being silently
+			 * truncated onto the wire. */
+			if (ulen > 255 || passlen > 255)
+				return -1;
+
+			*cur++ = 1;		/* auth version */
+			*cur++ = ulen;		/* username length */
+			memcpy(cur, cur_upstream->ua.user, ulen);
+			cur += ulen;
+			*cur++ = passlen;	/* password length */
+			if (passlen)
+				memcpy(cur, cur_upstream->pass, passlen);
+			cur += passlen;
 
 			if((cur - out) != safe_write(connptr->server_fd, out, cur - out))
 				return -1;
@@ -1340,6 +1355,11 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 			if(in[1] != 0 || !(in[0] == 5 || in[0] == 1)) {
 				return -1;
 			}
+		} else if (buff[1] != 0) {
+			/* The server chose a method we did not offer or
+			 * replied 0xFF ("no acceptable methods").  We can
+			 * only continue without authentication (method 0). */
+			return -1;
 		}
 		/* connect */
 		buff[0] = 5; /* socks version */

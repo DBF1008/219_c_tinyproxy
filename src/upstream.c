@@ -83,10 +83,21 @@ static struct upstream *upstream_build (const char *host, int port, char *domain
                         ret = basicauth_string(user, pass, b, sizeof b);
                         if (ret == 0) {
                                 *ube = UBE_USERLEN;
-                                return NULL;
+                                goto fail;
                         }
                         up->ua.authstr = safestrdup (b);
                 } else {
+                        /* In the SOCKS5 username/password sub-negotiation
+                         * (RFC 1929) the username and password are each sent
+                         * in a field prefixed by a single length octet, so
+                         * neither may be longer than 255 bytes.  Reject
+                         * over-long credentials here instead of silently
+                         * truncating them onto the wire during the handshake. */
+                        if (strlen (user) > 255 ||
+                            (pass && strlen (pass) > 255)) {
+                                *ube = UBE_USERLEN;
+                                goto fail;
+                        }
                         up->ua.user = safestrdup (user);
                         up->pass = safestrdup (pass);
                 }
