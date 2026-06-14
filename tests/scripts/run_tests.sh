@@ -24,7 +24,7 @@ TESTS_DIR=$SCRIPTS_DIR/..
 TESTENV_DIR=$TESTS_DIR/env
 LOG_DIR=$TESTENV_DIR/var/log
 
-TINYPROXY_IP=127.0.0.2
+TINYPROXY_IP=127.0.0.1
 TINYPROXY_PORT=12321
 TINYPROXY_USER=$(id -un)
 TINYPROXY_PID_DIR=$TESTENV_DIR/var/run/tinyproxy
@@ -37,9 +37,9 @@ TINYPROXY_CONF_FILE=$TINYPROXY_CONF_DIR/tinyproxy.conf
 TINYPROXY_FILTER_FILE=$TINYPROXY_CONF_DIR/filter
 TINYPROXY_STDERR_LOG=$TINYPROXY_LOG_DIR/tinyproxy.stderr.log
 TINYPROXY_BIN=$BASEDIR/src/tinyproxy
-TINYPROXY_STATHOST_IP="127.0.0.127"
+TINYPROXY_STATHOST_IP="127.0.0.1"
 
-WEBSERVER_IP=127.0.0.3
+WEBSERVER_IP=127.0.0.1
 WEBSERVER_PORT=32123
 WEBSERVER_PID_DIR=$TESTENV_DIR/var/run/webserver
 WEBSERVER_PID_FILE=$WEBSERVER_PID_DIR/webserver.pid
@@ -256,6 +256,119 @@ basic_test
 reload_config
 basic_test
 ext_test
+
+# --- Regression test: filter mode switch during hot-reload ---
+# Verifies that switching FilterType (regex <-> fnmatch) via SIGHUP
+# does not crash or corrupt memory, and that filtering continues to
+# work correctly with the new mode.
+#
+# This targets the bug where filter_destroy() used the NEW config's
+# filter_opts to free OLD filter entries compiled under a different
+# type, causing regfree() on fnmatch strings or safefree() on regex_t.
+
+write_filter_config() {
+        # $1 = filter type: "ere", "bre", or "fnmatch"
+        local ftype="$1"
+        cat > "$TINYPROXY_CONF_FILE" <<EOF
+User $TINYPROXY_USER
+Port $TINYPROXY_PORT
+Listen $TINYPROXY_IP
+Timeout 600
+StatHost "$TINYPROXY_STATHOST_IP"
+DefaultErrorFile "$TINYPROXY_DATA_DIR/debug.html"
+ErrorFile 400 "$TINYPROXY_DATA_DIR/debug.html"
+ErrorFile 403 "$TINYPROXY_DATA_DIR/debug.html"
+ErrorFile 501 "$TINYPROXY_DATA_DIR/debug.html"
+ErrorFile 502 "$TINYPROXY_DATA_DIR/debug.html"
+StatFile "$TINYPROXY_DATA_DIR/stats.html"
+Logfile "$TINYPROXY_LOG_FILE"
+PidFile "$TINYPROXY_PID_FILE"
+LogLevel Info
+MaxClients 100
+Allow 127.0.0.0/8
+ViaProxyName "tinyproxy"
+ConnectPort 443
+ConnectPort 563
+Filter "$TINYPROXY_FILTER_FILE"
+FilterType $ftype
+XTinyproxy Yes
+Upstream http 255.255.255.255:65535 ".invalid"
+EOF
+}
+
+filter_mode_switch_test() {
+        # --- Phase 1: regex (ERE) mode ---
+        printf "setting filter to ERE mode..."
+        write_filter_config "ere"
+        cat > "$TINYPROXY_FILTER_FILE" <<'FEOF'
+.*\.google-analytics\.com$
+FEOF
+        reload_config
+        wait_for_some_seconds 1
+
+        printf "testing ERE filter blocks matching domain..."
+        run_failure_webclient_request 403 "$TINYPROXY_IP:$TINYPROXY_PORT" "http://badgoy.google-analytics.com/"
+        test "$?" = "0" || FAILED=$((FAILED + 1))
+
+        printf "testing ERE filter allows non-matching domain..."
+        run_basic_webclient_request "$TINYPROXY_IP:$TINYPROXY_PORT" "http://$WEBSERVER_IP:$WEBSERVER_PORT/"
+        test "$?" = "0" || FAILED=$((FAILED + 1))
+
+        # --- Phase 2: switch to fnmatch mode ---
+        printf "switching filter to fnmatch mode..."
+        write_filter_config "fnmatch"
+        cat > "$TINYPROXY_FILTER_FILE" <<'FEOF'
+*.google-analytics.com
+FEOF
+        reload_config
+        wait_for_some_seconds 1
+
+        # Verify tinyproxy survived the mode switch (no crash)
+        printf "testing tinyproxy alive after regex->fnmatch switch..."
+        run_basic_webclient_request "$TINYPROXY_IP:$TINYPROXY_PORT" "http://$WEBSERVER_IP:$WEBSERVER_PORT/"
+        test "$?" = "0" || FAILED=$((FAILED + 1))
+
+        printf "testing fnmatch filter blocks matching domain..."
+        run_failure_webclient_request 403 "$TINYPROXY_IP:$TINYPROXY_PORT" "http://badgoy.google-analytics.com/"
+        test "$?" = "0" || FAILED=$((FAILED + 1))
+
+        # --- Phase 3: switch back to BRE (regex) mode ---
+        printf "switching filter back to BRE mode..."
+        write_filter_config "bre"
+        cat > "$TINYPROXY_FILTER_FILE" <<'FEOF'
+.*\.google-analytics\.com$
+FEOF
+        reload_config
+        wait_for_some_seconds 1
+
+        # Verify tinyproxy survived fnmatch->regex switch
+        printf "testing tinyproxy alive after fnmatch->bre switch..."
+        run_basic_webclient_request "$TINYPROXY_IP:$TINYPROXY_PORT" "http://$WEBSERVER_IP:$WEBSERVER_PORT/"
+        test "$?" = "0" || FAILED=$((FAILED + 1))
+
+        printf "testing BRE filter blocks matching domain..."
+        run_failure_webclient_request 403 "$TINYPROXY_IP:$TINYPROXY_PORT" "http://badgoy.google-analytics.com/"
+        test "$?" = "0" || FAILED=$((FAILED + 1))
+
+        # --- Phase 4: switch to ERE once more (regex->regex with different cflags) ---
+        printf "switching filter to ERE mode again..."
+        write_filter_config "ere"
+        cat > "$TINYPROXY_FILTER_FILE" <<'FEOF'
+.*\.google-analytics\.com$
+FEOF
+        reload_config
+        wait_for_some_seconds 1
+
+        printf "testing tinyproxy alive after bre->ere switch..."
+        run_basic_webclient_request "$TINYPROXY_IP:$TINYPROXY_PORT" "http://$WEBSERVER_IP:$WEBSERVER_PORT/"
+        test "$?" = "0" || FAILED=$((FAILED + 1))
+
+        printf "testing ERE filter blocks matching domain (round 2)..."
+        run_failure_webclient_request 403 "$TINYPROXY_IP:$TINYPROXY_PORT" "http://badgoy.google-analytics.com/"
+        test "$?" = "0" || FAILED=$((FAILED + 1))
+}
+
+filter_mode_switch_test
 
 echo "$FAILED errors"
 

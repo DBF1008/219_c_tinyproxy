@@ -1,0 +1,27 @@
+[Sun Jun 14 10:18:09 2026, 51357] /Users/dongbufan/work/ai_color/one_claude_project/success/219_c_tinyproxy/prompt/p4/p4-qwen-3.7-max/tests/scripts/webserver.pl: server started listening on port 32123
+[Sun Jun 14 10:18:10 2026, 51357] /Users/dongbufan/work/ai_color/one_claude_project/success/219_c_tinyproxy/prompt/p4/p4-qwen-3.7-max/tests/scripts/webserver.pl: connection from 127.0.0.1 at port 57346
+[Sun Jun 14 10:18:10 2026, 51357] /Users/dongbufan/work/ai_color/one_claude_project/success/219_c_tinyproxy/prompt/p4/p4-qwen-3.7-max/tests/scripts/webserver.pl: child process created with pid 51370
+[Sun Jun 14 10:18:10 2026, 51370] /Users/dongbufan/work/ai_color/one_claude_project/success/219_c_tinyproxy/prompt/p4/p4-qwen-3.7-max/tests/scripts/webserver.pl: client_action: client 127.0.0.1
+[Sun Jun 14 10:18:10 2026, 51370] /Users/dongbufan/work/ai_color/one_claude_project/success/219_c_tinyproxy/prompt/p4/p4-qwen-3.7-max/tests/scripts/webserver.pl: request:
+------------------------------
+Method:  GET
+Object:  /
+Version: 1.0
+
+Headers:
+user-agent: Tinyproxy-Web-Client
+------------------------------
+[Sun Jun 14 10:18:10 2026, 51357] /Users/dongbufan/work/ai_color/one_claude_project/success/219_c_tinyproxy/prompt/p4/p4-qwen-3.7-max/tests/scripts/webserver.pl: reaped 51370
+[Sun Jun 14 10:18:10 2026, 51357] /Users/dongbufan/work/ai_color/one_claude_project/success/219_c_tinyproxy/prompt/p4/p4-qwen-3.7-max/tests/scripts/webserver.pl: connection from 127.0.0.1 at port 57349
+[Sun Jun 14 10:18:10 2026, 51357] /Users/dongbufan/work/ai_color/one_claude_project/success/219_c_tinyproxy/prompt/p4/p4-qwen-3.7-max/tests/scripts/webserver.pl: child process created with pid 51375
+[Sun Jun 14 10:18:10 2026, 51375] /Users/dongbufan/work/ai_color/one_claude_project/success/219_c_tinyproxy/prompt/p4/p4-qwen-3.7-max/tests/scripts/webserver.pl: client_action: client 127.0.0.1
+[Sun Jun 14 10:18:10 2026, 51375] /Users/dongbufan/work/ai_color/one_claude_project/success/219_c_tinyproxy/prompt/p4/p4-qwen-3.7-max/tests/scripts/webserver.pl: request:
+------------------------------
+Method:  GET
+Object:  /
+Version: 1.0
+
+Headers:
+user-agent: Tinyproxy-Web-Client
+------------------------------
+[Sun Jun 14 10:18:10 2026, 51357] /Users/dongbufan/work/ai_color/one_claude_project/success/219_c_tinyproxy/prompt/p4/p4-qwen-3.7-max/tests/scripts/webserver.pl: reaped 51375

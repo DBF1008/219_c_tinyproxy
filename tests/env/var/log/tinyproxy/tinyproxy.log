@@ -1,0 +1,114 @@
+NOTICE    Jun 14 10:18:09.488 [51361]: Initializing tinyproxy ...
+NOTICE    Jun 14 10:18:09.488 [51361]: Reloading config file (/Users/dongbufan/work/ai_color/one_claude_project/success/219_c_tinyproxy/prompt/p4/p4-qwen-3.7-max/tests/scripts/../env/etc/tinyproxy/tinyproxy.conf)
+INFO      Jun 14 10:18:09.488 [51361]: Added address [127.0.0.1] to listen addresses.
+INFO      Jun 14 10:18:09.488 [51361]: Stathost set to "127.0.0.1"
+INFO      Jun 14 10:18:09.488 [51361]: Setting "Via" header to 'tinyproxy'
+INFO      Jun 14 10:18:09.488 [51361]: Adding Port [443] to the list allowed by CONNECT
+INFO      Jun 14 10:18:09.488 [51361]: Adding Port [563] to the list allowed by CONNECT
+INFO      Jun 14 10:18:09.488 [51361]: Added upstream http 255.255.255.255:65535 for .invalid
+NOTICE    Jun 14 10:18:09.488 [51361]: Reloading config file finished
+INFO      Jun 14 10:18:09.488 [51361]: listen_sock called with addr = '127.0.0.1'
+INFO      Jun 14 10:18:09.488 [51361]: trying to listen on host[127.0.0.1], family[2], socktype[1], proto[6]
+INFO      Jun 14 10:18:09.488 [51361]: listening on fd [0]
+INFO      Jun 14 10:18:09.488 [51361]: Not running as root, so not changing UID/GID.
+INFO      Jun 14 10:18:09.488 [51361]: Setting the various signals.
+INFO      Jun 14 10:18:09.488 [51361]: Starting main loop. Accepting connections.
+CONNECT   Jun 14 10:18:10.586 [51361]: Connect (file descriptor 2): 127.0.0.1
+CONNECT   Jun 14 10:18:10.586 [51361]: Request (file descriptor 2): GET http://127.0.0.1:32123/ HTTP/1.0
+NOTICE    Jun 14 10:18:10.586 [51361]: Request for the stathost.
+CONNECT   Jun 14 10:18:10.611 [51361]: Connect (file descriptor 2): 127.0.0.1
+CONNECT   Jun 14 10:18:10.611 [51361]: Request (file descriptor 2): GET http://127.0.0.1 HTTP/1.0
+NOTICE    Jun 14 10:18:10.611 [51361]: Request for the stathost.
+NOTICE    Jun 14 10:18:10.615 [51361]: Reloading config file (/Users/dongbufan/work/ai_color/one_claude_project/success/219_c_tinyproxy/prompt/p4/p4-qwen-3.7-max/tests/scripts/../env/etc/tinyproxy/tinyproxy.conf)
+INFO      Jun 14 10:18:10.615 [51361]: Added address [127.0.0.1] to listen addresses.
+INFO      Jun 14 10:18:10.615 [51361]: Stathost set to "127.0.0.1"
+INFO      Jun 14 10:18:10.615 [51361]: Setting "Via" header to 'tinyproxy'
+INFO      Jun 14 10:18:10.615 [51361]: Adding Port [443] to the list allowed by CONNECT
+INFO      Jun 14 10:18:10.615 [51361]: Adding Port [563] to the list allowed by CONNECT
+INFO      Jun 14 10:18:10.615 [51361]: Added upstream http 255.255.255.255:65535 for .invalid
+NOTICE    Jun 14 10:18:10.615 [51361]: Reloading config file finished
+NOTICE    Jun 14 10:18:10.615 [51361]: Re-reading filter file.
+CONNECT   Jun 14 10:18:10.661 [51361]: Connect (file descriptor 3): 127.0.0.1
+CONNECT   Jun 14 10:18:10.661 [51361]: Request (file descriptor 3): GET http://127.0.0.1:32123/ HTTP/1.0
+NOTICE    Jun 14 10:18:10.661 [51361]: Request for the stathost.
+CONNECT   Jun 14 10:18:10.684 [51361]: Connect (file descriptor 3): 127.0.0.1
+CONNECT   Jun 14 10:18:10.685 [51361]: Request (file descriptor 3): GET http://127.0.0.1 HTTP/1.0
+NOTICE    Jun 14 10:18:10.685 [51361]: Request for the stathost.
+CONNECT   Jun 14 10:18:10.710 [51361]: Connect (file descriptor 3): 127.0.0.1
+CONNECT   Jun 14 10:18:10.710 [51361]: Request (file descriptor 3): BIG FART http://127.0.0.1:32123 HTTP/1.0
+ERROR     Jun 14 10:18:10.710 [51361]: process_request: Bad Request on file descriptor 3
+CONNECT   Jun 14 10:18:10.734 [51361]: Connect (file descriptor 3): 127.0.0.1
+CONNECT   Jun 14 10:18:10.734 [51361]: Request (file descriptor 3): GET http://badgoy.google-analytics.com/ HTTP/1.0
+NOTICE    Jun 14 10:18:10.734 [51361]: Proxying refused on filtered domain "badgoy.google-analytics.com"
+CONNECT   Jun 14 10:18:10.758 [51361]: Connect (file descriptor 3): 127.0.0.1
+CONNECT   Jun 14 10:18:10.758 [51361]: Request (file descriptor 3): CONNECT localhost:12345 HTTP/1.0
+INFO      Jun 14 10:18:10.758 [51361]: Refused CONNECT method on port 12345
+CONNECT   Jun 14 10:18:10.783 [51361]: Connect (file descriptor 3): 127.0.0.1
+CONNECT   Jun 14 10:18:10.783 [51361]: Request (file descriptor 3): GET http://bogus.invalid HTTP/1.0
+INFO      Jun 14 10:18:10.783 [51361]: Found upstream proxy http 255.255.255.255:65535 for bogus.invalid
+INFO      Jun 14 10:18:10.783 [51361]: opensock: opening connection to 255.255.255.255:65535
+INFO      Jun 14 10:18:10.785 [51361]: opensock: getaddrinfo returned for 255.255.255.255:65535
+ERROR     Jun 14 10:18:10.786 [51361]: opensock: Could not establish a connection to 255.255.255.255:65535
+WARNING   Jun 14 10:18:10.786 [51361]: Could not connect to upstream proxy.
+NOTICE    Jun 14 10:18:10.792 [51361]: Reloading config file (/Users/dongbufan/work/ai_color/one_claude_project/success/219_c_tinyproxy/prompt/p4/p4-qwen-3.7-max/tests/scripts/../env/etc/tinyproxy/tinyproxy.conf)
+INFO      Jun 14 10:18:10.792 [51361]: Added address [127.0.0.1] to listen addresses.
+INFO      Jun 14 10:18:10.792 [51361]: Stathost set to "127.0.0.1"
+INFO      Jun 14 10:18:10.792 [51361]: Setting "Via" header to 'tinyproxy'
+INFO      Jun 14 10:18:10.792 [51361]: Adding Port [443] to the list allowed by CONNECT
+INFO      Jun 14 10:18:10.792 [51361]: Adding Port [563] to the list allowed by CONNECT
+INFO      Jun 14 10:18:10.792 [51361]: Added upstream http 255.255.255.255:65535 for .invalid
+NOTICE    Jun 14 10:18:10.792 [51361]: Reloading config file finished
+NOTICE    Jun 14 10:18:10.792 [51361]: Re-reading filter file.
+CONNECT   Jun 14 10:18:11.854 [51361]: Connect (file descriptor 3): 127.0.0.1
+CONNECT   Jun 14 10:18:11.854 [51361]: Request (file descriptor 3): GET http://badgoy.google-analytics.com/ HTTP/1.0
+NOTICE    Jun 14 10:18:11.854 [51361]: Proxying refused on filtered domain "badgoy.google-analytics.com"
+CONNECT   Jun 14 10:18:11.882 [51361]: Connect (file descriptor 3): 127.0.0.1
+CONNECT   Jun 14 10:18:11.883 [51361]: Request (file descriptor 3): GET http://127.0.0.1:32123/ HTTP/1.0
+NOTICE    Jun 14 10:18:11.883 [51361]: Request for the stathost.
+NOTICE    Jun 14 10:18:11.890 [51361]: Reloading config file (/Users/dongbufan/work/ai_color/one_claude_project/success/219_c_tinyproxy/prompt/p4/p4-qwen-3.7-max/tests/scripts/../env/etc/tinyproxy/tinyproxy.conf)
+INFO      Jun 14 10:18:11.890 [51361]: Added address [127.0.0.1] to listen addresses.
+INFO      Jun 14 10:18:11.890 [51361]: Stathost set to "127.0.0.1"
+INFO      Jun 14 10:18:11.890 [51361]: Setting "Via" header to 'tinyproxy'
+INFO      Jun 14 10:18:11.890 [51361]: Adding Port [443] to the list allowed by CONNECT
+INFO      Jun 14 10:18:11.890 [51361]: Adding Port [563] to the list allowed by CONNECT
+INFO      Jun 14 10:18:11.890 [51361]: Added upstream http 255.255.255.255:65535 for .invalid
+NOTICE    Jun 14 10:18:11.890 [51361]: Reloading config file finished
+NOTICE    Jun 14 10:18:11.890 [51361]: Re-reading filter file.
+CONNECT   Jun 14 10:18:12.948 [51361]: Connect (file descriptor 3): 127.0.0.1
+CONNECT   Jun 14 10:18:12.948 [51361]: Request (file descriptor 3): GET http://127.0.0.1:32123/ HTTP/1.0
+NOTICE    Jun 14 10:18:12.948 [51361]: Request for the stathost.
+CONNECT   Jun 14 10:18:12.979 [51361]: Connect (file descriptor 3): 127.0.0.1
+CONNECT   Jun 14 10:18:12.979 [51361]: Request (file descriptor 3): GET http://badgoy.google-analytics.com/ HTTP/1.0
+NOTICE    Jun 14 10:18:12.979 [51361]: Proxying refused on filtered domain "badgoy.google-analytics.com"
+NOTICE    Jun 14 10:18:12.985 [51361]: Reloading config file (/Users/dongbufan/work/ai_color/one_claude_project/success/219_c_tinyproxy/prompt/p4/p4-qwen-3.7-max/tests/scripts/../env/etc/tinyproxy/tinyproxy.conf)
+INFO      Jun 14 10:18:12.985 [51361]: Added address [127.0.0.1] to listen addresses.
+INFO      Jun 14 10:18:12.986 [51361]: Stathost set to "127.0.0.1"
+INFO      Jun 14 10:18:12.986 [51361]: Setting "Via" header to 'tinyproxy'
+INFO      Jun 14 10:18:12.986 [51361]: Adding Port [443] to the list allowed by CONNECT
+INFO      Jun 14 10:18:12.986 [51361]: Adding Port [563] to the list allowed by CONNECT
+INFO      Jun 14 10:18:12.986 [51361]: Added upstream http 255.255.255.255:65535 for .invalid
+NOTICE    Jun 14 10:18:12.986 [51361]: Reloading config file finished
+NOTICE    Jun 14 10:18:12.986 [51361]: Re-reading filter file.
+CONNECT   Jun 14 10:18:14.042 [51361]: Connect (file descriptor 3): 127.0.0.1
+CONNECT   Jun 14 10:18:14.042 [51361]: Request (file descriptor 3): GET http://127.0.0.1:32123/ HTTP/1.0
+NOTICE    Jun 14 10:18:14.042 [51361]: Request for the stathost.
+CONNECT   Jun 14 10:18:14.073 [51361]: Connect (file descriptor 3): 127.0.0.1
+CONNECT   Jun 14 10:18:14.073 [51361]: Request (file descriptor 3): GET http://badgoy.google-analytics.com/ HTTP/1.0
+NOTICE    Jun 14 10:18:14.073 [51361]: Proxying refused on filtered domain "badgoy.google-analytics.com"
+NOTICE    Jun 14 10:18:14.080 [51361]: Reloading config file (/Users/dongbufan/work/ai_color/one_claude_project/success/219_c_tinyproxy/prompt/p4/p4-qwen-3.7-max/tests/scripts/../env/etc/tinyproxy/tinyproxy.conf)
+INFO      Jun 14 10:18:14.080 [51361]: Added address [127.0.0.1] to listen addresses.
+INFO      Jun 14 10:18:14.080 [51361]: Stathost set to "127.0.0.1"
+INFO      Jun 14 10:18:14.080 [51361]: Setting "Via" header to 'tinyproxy'
+INFO      Jun 14 10:18:14.080 [51361]: Adding Port [443] to the list allowed by CONNECT
+INFO      Jun 14 10:18:14.080 [51361]: Adding Port [563] to the list allowed by CONNECT
+INFO      Jun 14 10:18:14.080 [51361]: Added upstream http 255.255.255.255:65535 for .invalid
+NOTICE    Jun 14 10:18:14.080 [51361]: Reloading config file finished
+NOTICE    Jun 14 10:18:14.080 [51361]: Re-reading filter file.
+CONNECT   Jun 14 10:18:15.155 [51361]: Connect (file descriptor 3): 127.0.0.1
+CONNECT   Jun 14 10:18:15.155 [51361]: Request (file descriptor 3): GET http://127.0.0.1:32123/ HTTP/1.0
+NOTICE    Jun 14 10:18:15.155 [51361]: Request for the stathost.
+CONNECT   Jun 14 10:18:15.188 [51361]: Connect (file descriptor 3): 127.0.0.1
+CONNECT   Jun 14 10:18:15.188 [51361]: Request (file descriptor 3): GET http://badgoy.google-analytics.com/ HTTP/1.0
+NOTICE    Jun 14 10:18:15.188 [51361]: Proxying refused on filtered domain "badgoy.google-analytics.com"
+NOTICE    Jun 14 10:18:15.191 [51361]: Shutting down.
+INFO      Jun 14 10:18:15.191 [51361]: trying to bring down 1 threads...
