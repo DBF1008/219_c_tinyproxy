@@ -226,6 +226,7 @@ docs/man8/Makefile
 m4macros/Makefile
 tests/Makefile
 tests/scripts/Makefile
+tests/unit/Makefile
 scripts/Makefile
 ])
 
