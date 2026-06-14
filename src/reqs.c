@@ -48,6 +48,9 @@
 #include "transparent-proxy.h"
 #include "upstream.h"
 #include "connect-ports.h"
+#ifdef UPSTREAM_SUPPORT
+#include "socks5.h"
+#endif
 #include "conf.h"
 #include "basicauth.h"
 #include "loop.h"
@@ -231,7 +234,11 @@ static int extract_url (const char *url, int default_port,
         port = strip_return_port (request->host);
         request->port = (port != 0) ? port : default_port;
 
-        /* Remove any surrounding '[' and ']' from IPv6 literals */
+        /* Remove any surrounding '[' and ']' from IPv6 literals.
+         * After memmove shifts content left by 1, p still points to
+         * the old ']' position (one past the shifted tail).  The two
+         * assignments correctly null out the old position and the
+         * leftover bracket character. */
         p = strrchr (request->host, ']');
         if (p && (*(request->host) == '[')) {
                 memmove(request->host, request->host + 1,
@@ -1264,11 +1271,13 @@ static void relay_connection (struct conn_s *connptr)
 }
 
 #ifdef UPSTREAM_SUPPORT
+
 static int
 connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 {
 	unsigned len;
-	unsigned char buff[512]; /* won't use more than 7 + 255 */
+	unsigned char buff[512]; /* max: 4+16(IPv6)+2(port)=22 for connect;
+	                            auth uses separate buffer */
 	unsigned short port;
 	size_t ulen, passlen;
 
@@ -1342,19 +1351,14 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 			}
 		}
 		/* connect */
-		buff[0] = 5; /* socks version */
-		buff[1] = 1; /* connect */
-		buff[2] = 0; /* reserved */
-		buff[3] = 3; /* domainname */
-		len=strlen(request->host);
-		if(len>255)
-			return -1;
-		buff[4] = len; /* length of domainname */
-		memcpy(&buff[5], request->host, len); /* dest ip */
-		port = htons(request->port);
-		memcpy(&buff[5+len], &port, 2); /* dest port */
-		if (7+len != safe_write(connptr->server_fd, buff, 7+len))
-			return -1;
+		{
+			int req_len = socks5_build_connect_request(
+				buff, sizeof(buff), request->host, request->port);
+			if (req_len < 0)
+				return -1;
+			if (req_len != safe_write(connptr->server_fd, buff, req_len))
+				return -1;
+		}
 		if (4 != safe_read(connptr->server_fd, buff, 4))
 			return -1;
 		if (buff[0]!=5 || buff[1]!=0)

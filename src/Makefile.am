@@ -53,7 +53,8 @@ tinyproxy_SOURCES = \
 	pseudomap.c pseudomap.h \
 	loop.c loop.h \
 	mypoll.c mypoll.h \
-	connect-ports.c connect-ports.h
+	connect-ports.c connect-ports.h \
+	socks5.c socks5.h
 
 EXTRA_tinyproxy_SOURCES = filter.c filter.h \
 	reverse-proxy.c reverse-proxy.h \
