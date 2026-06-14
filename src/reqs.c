@@ -260,6 +260,8 @@ establish_http_connection (struct conn_s *connptr, struct request_s *request)
 {
         char portbuff[7];
         char dst[sizeof(struct in6_addr)];
+        char hostbuff[NI_MAXHOST + 8];
+        int ret;
 
         /* Build a port string if it's not a standard port */
         if (request->port != HTTP_PORT && request->port != HTTP_PORT_SSL)
@@ -267,40 +269,42 @@ establish_http_connection (struct conn_s *connptr, struct request_s *request)
         else
                 portbuff[0] = '\0';
 
+        /* Format the Host header value: wrap IPv6 literals in [] */
         if (inet_pton(AF_INET6, request->host, dst) > 0) {
-                /* host is an IPv6 address literal, so surround it with
-                 * [] */
-                return write_message (connptr->server_fd,
-                                      "%s %s HTTP/1.%u\r\n"
-                                      "Host: [%s]%s\r\n"
-                                      "Connection: close\r\n",
-                                      request->method, request->path,
-                                      connptr->protocol.major != 1 ? 0 :
-                                               connptr->protocol.minor,
-                                      request->host, portbuff);
-        } else if (connptr->upstream_proxy &&
-                   connptr->upstream_proxy->type == PT_HTTP &&
-                   connptr->upstream_proxy->ua.authstr) {
-                return write_message (connptr->server_fd,
-                                      "%s %s HTTP/1.%u\r\n"
-                                      "Host: %s%s\r\n"
-                                      "Connection: close\r\n"
-                                      "Proxy-Authorization: Basic %s\r\n",
-                                      request->method, request->path,
-                                      connptr->protocol.major != 1 ? 0 :
-                                               connptr->protocol.minor,
-                                      request->host, portbuff,
-                                      connptr->upstream_proxy->ua.authstr);
+                snprintf (hostbuff, sizeof(hostbuff), "[%s]%s",
+                          request->host, portbuff);
         } else {
-                return write_message (connptr->server_fd,
-                                      "%s %s HTTP/1.%u\r\n"
-                                      "Host: %s%s\r\n"
-                                      "Connection: close\r\n",
-                                      request->method, request->path,
-                                      connptr->protocol.major != 1 ? 0 :
-                                               connptr->protocol.minor,
-                                      request->host, portbuff);
+                snprintf (hostbuff, sizeof(hostbuff), "%s%s",
+                          request->host, portbuff);
         }
+
+        /* Send the request line and Host header */
+        ret = write_message (connptr->server_fd,
+                             "%s %s HTTP/1.%u\r\n"
+                             "Host: %s\r\n",
+                             request->method, request->path,
+                             connptr->protocol.major != 1 ? 0 :
+                                      connptr->protocol.minor,
+                             hostbuff);
+        if (ret < 0)
+                return ret;
+
+        /* Inject Proxy-Authorization for authenticated HTTP upstream
+         * proxies, regardless of whether the target is IPv4, IPv6,
+         * or a domain name. */
+        if (connptr->upstream_proxy &&
+            connptr->upstream_proxy->type == PT_HTTP &&
+            connptr->upstream_proxy->ua.authstr) {
+                ret = write_message (connptr->server_fd,
+                                     "Proxy-Authorization: Basic %s\r\n",
+                                     connptr->upstream_proxy->ua.authstr);
+                if (ret < 0)
+                        return ret;
+        }
+
+        /* Finish the header block */
+        return write_message (connptr->server_fd,
+                              "Connection: close\r\n");
 }
 
 /*
