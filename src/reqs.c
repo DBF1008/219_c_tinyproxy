@@ -31,6 +31,7 @@
 #include "anonymous.h"
 #include "buffer.h"
 #include "conns.h"
+#include "conn-headers.h"
 #include "filter.h"
 #include "hsearch.h"
 #include "pseudomap.h"
@@ -748,65 +749,6 @@ static int get_all_headers (int fd, pseudomap *hashofheaders)
         safefree (header);
         safefree (line);
         return -1;
-}
-
-/*
- * Extract the headers to remove.  These headers were listed in the Connection
- * and Proxy-Connection headers.
- */
-static int remove_connection_headers (pseudomap *hashofheaders)
-{
-        static const char *headers[] = {
-                "connection",
-                "proxy-connection"
-        };
-
-        char *data;
-        char *ptr;
-        ssize_t len;
-        int i,j,df;
-
-        for (i = 0; i != (sizeof (headers) / sizeof (char *)); ++i) {
-                /* Look for the connection header.  If it's not found, return. */
-                data = pseudomap_find(hashofheaders, headers[i]);
-
-                if (!data)
-                        return 0;
-
-                len = strlen(data);
-
-                /*
-                 * Go through the data line and replace any special characters
-                 * with a NULL.
-                 */
-                ptr = data;
-                while ((ptr = strpbrk (ptr, "()<>@,;:\\\"/[]?={} \t")))
-                        *ptr++ = '\0';
-
-                /*
-                 * All the tokens are separated by NULLs.  Now go through the
-                 * token and remove them from the hashofheaders.
-                 */
-                ptr = data;
-                while (ptr < data + len) {
-                        df = 0;
-                        /* check that ptr isn't one of headers to prevent
-                           double-free (CVE-2023-49606) */
-                        for (j = 0; j != (sizeof (headers) / sizeof (char *)); ++j)
-                                if(!strcasecmp(ptr, headers[j])) df = 1;
-                        if (!df) pseudomap_remove (hashofheaders, ptr);
-
-                        /* Advance ptr to the next token */
-                        ptr += strlen (ptr) + 1;
-                        while (ptr < data + len && *ptr == '\0')
-                                ptr++;
-                }
-
-                /* Now remove the connection header it self. */
-                pseudomap_remove (hashofheaders, headers[i]);
-        }
-
-        return 0;
 }
 
 /*

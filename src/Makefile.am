@@ -33,6 +33,7 @@ tinyproxy_SOURCES = \
 	conf-tokens.c conf-tokens.h \
 	conf.c conf.h \
 	conns.c conns.h \
+	conn-headers.c conn-headers.h \
 	daemon.c daemon.h \
 	heap.c heap.h \
 	html-error.c html-error.h \

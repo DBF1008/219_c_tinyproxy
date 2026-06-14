@@ -25,7 +25,11 @@ EXTRA_DIST = \
 	VERSION
 
 test: all
+	./tests/scripts/run_unit_tests.sh
 	./tests/scripts/run_tests.sh
+
+unittest:
+	./tests/scripts/run_unit_tests.sh
 
 .PHONY: shellcheck
 shellcheck:
