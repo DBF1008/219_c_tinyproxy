@@ -189,6 +189,8 @@ enum upstream_build_error upstream_add (
 
 upstream_cleanup:
         safefree (up->host);
+        safefree (up->ua.user);
+        safefree (up->pass);
         if(up->target.type == HST_STRING)
                 safefree (up->target.address.string);
         safefree (up);
@@ -231,6 +233,8 @@ void free_upstream_list (struct upstream *up)
                 if(tmp->target.type == HST_STRING)
                         safefree (tmp->target.address.string);
                 safefree (tmp->host);
+                safefree (tmp->ua.user);
+                safefree (tmp->pass);
                 safefree (tmp);
         }
 }
