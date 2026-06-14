@@ -1,0 +1,40 @@
+name: Generate Source Tarball
+
+# Trigger whenever a release is created
+on:
+  release:
+    types:
+      - created
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: archive
+      id: archive
+      run: |
+        sudo apt install -y gperf
+        rm -rf .git
+        autoreconf -i
+        VERSION=$(cat VERSION)
+        PKGNAME="tinyproxy-$VERSION"
+        ./configure
+        make dist
+        echo "tarball_xz=${PKGNAME}.tar.xz" >> "$GITHUB_OUTPUT"
+        echo "tarball_gz=${PKGNAME}.tar.gz" >> "$GITHUB_OUTPUT"
+        echo "tarball_bz2=${PKGNAME}.tar.bz2" >> "$GITHUB_OUTPUT"
+
+    - name: upload tarballs
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          ${{ steps.archive.outputs.tarball_xz }}
+          ${{ steps.archive.outputs.tarball_gz }}
+          ${{ steps.archive.outputs.tarball_bz2 }}
+
