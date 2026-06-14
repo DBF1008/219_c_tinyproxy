@@ -252,6 +252,26 @@ run_failure_webclient_request 502 "$TINYPROXY_IP:$TINYPROXY_PORT" "http://bogus.
 test "$?" = "0" || FAILED=$((FAILED + 1))
 }
 
+unit_test_socks5() {
+	printf "checking SOCKS5 upstream request encoding (IPv4/domain/IPv6)..."
+	socks5_test_bin="$TESTENV_DIR/socks5_test"
+	if ! "${CC:-cc}" "$SCRIPTS_DIR/socks5_test.c" -o "$socks5_test_bin" \
+			2> "$LOG_DIR/socks5_test.build.log" ; then
+		echo " ERROR: could not compile socks5_test.c"
+		cat "$LOG_DIR/socks5_test.build.log"
+		FAILED=$((FAILED + 1))
+		return
+	fi
+	if "$socks5_test_bin" > "$LOG_DIR/socks5_test.log" 2>&1 ; then
+		echo " ok"
+	else
+		echo " ERROR"
+		cat "$LOG_DIR/socks5_test.log"
+		FAILED=$((FAILED + 1))
+	fi
+}
+
+unit_test_socks5
 basic_test
 reload_config
 basic_test

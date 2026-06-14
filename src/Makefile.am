@@ -40,6 +40,7 @@ tinyproxy_SOURCES = \
 	log.c log.h \
 	network.c network.h \
 	reqs.c reqs.h \
+	socks5.c socks5.h \
 	sock.c sock.h \
 	stats.c stats.h \
 	text.c text.h \

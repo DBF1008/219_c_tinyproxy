@@ -52,6 +52,7 @@
 #include "basicauth.h"
 #include "loop.h"
 #include "mypoll.h"
+#include "socks5.h"
 
 /*
  * Maximum length of a HTTP line
@@ -1341,20 +1342,18 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 				return -1;
 			}
 		}
-		/* connect */
-		buff[0] = 5; /* socks version */
-		buff[1] = 1; /* connect */
-		buff[2] = 0; /* reserved */
-		buff[3] = 3; /* domainname */
-		len=strlen(request->host);
-		if(len>255)
-			return -1;
-		buff[4] = len; /* length of domainname */
-		memcpy(&buff[5], request->host, len); /* dest ip */
-		port = htons(request->port);
-		memcpy(&buff[5+len], &port, 2); /* dest port */
-		if (7+len != safe_write(connptr->server_fd, buff, 7+len))
-			return -1;
+		/* connect: encode the destination per RFC 1928, picking the
+		   right address type (IPv4 / IPv6 / domain name) instead of
+		   always sending it as a domain name. */
+		{
+			int reqlen = build_socks5_connect_request(
+				buff, sizeof(buff),
+				request->host, request->port);
+			if (reqlen < 0)
+				return -1;
+			if (reqlen != safe_write(connptr->server_fd, buff, reqlen))
+				return -1;
+		}
 		if (4 != safe_read(connptr->server_fd, buff, 4))
 			return -1;
 		if (buff[0]!=5 || buff[1]!=0)
