@@ -1313,8 +1313,24 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 			return -1;
 		if (2 != safe_read(connptr->server_fd, buff, 2))
 			return -1;
-		if (buff[0] != 5 || (buff[1] != 0 && buff[1] != 2))
+		if (buff[0] != 5) {
+			log_message(LOG_WARNING,
+				"SOCKS5 proxy returned invalid version %d",
+				buff[0]);
 			return -1;
+		}
+		if (buff[1] == 2 && ulen == 0) {
+			log_message(LOG_WARNING,
+				"SOCKS5 proxy selected user/pass auth but "
+				"no credentials configured");
+			return -1;
+		}
+		if (buff[1] != 0 && buff[1] != 2) {
+			log_message(LOG_WARNING,
+				"SOCKS5 proxy selected unsupported auth "
+				"method %d", buff[1]);
+			return -1;
+		}
 
 		if (buff[1] == 2) {
 			/* authentication */
@@ -1323,12 +1339,26 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 			char *cur = out;
 			size_t c;
 			*cur++ = 1;	/* version */
-			c = ulen & 0xFF;
-			*cur++ = c;
+			if (ulen < 1 || ulen > 255) {
+				log_message(LOG_WARNING,
+					"SOCKS5 username length %lu "
+					"outside RFC 1929 range 1-255",
+					(unsigned long)ulen);
+				return -1;
+			}
+			if (passlen < 1 || passlen > 255) {
+				log_message(LOG_WARNING,
+					"SOCKS5 password length %lu "
+					"outside RFC 1929 range 1-255",
+					(unsigned long)passlen);
+				return -1;
+			}
+			c = ulen;
+			*cur++ = (unsigned char)c;
 			memcpy(cur, cur_upstream->ua.user, c);
 			cur += c;
-			c = passlen & 0xFF;
-			*cur++ = c;
+			c = passlen;
+			*cur++ = (unsigned char)c;
 			memcpy(cur, cur_upstream->pass, c);
 			cur += c;
 
@@ -1337,7 +1367,18 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 
 			if(2 != safe_read(connptr->server_fd, in, 2))
 				return -1;
-			if(in[1] != 0 || !(in[0] == 5 || in[0] == 1)) {
+			if (in[0] != 1) {
+				log_message(LOG_WARNING,
+					"SOCKS5 auth sub-response: "
+					"expected version 1, got %d",
+					in[0]);
+				return -1;
+			}
+			if (in[1] != 0) {
+				log_message(LOG_WARNING,
+					"SOCKS5 proxy rejected "
+					"credentials (status %d)",
+					in[1]);
 				return -1;
 			}
 		}

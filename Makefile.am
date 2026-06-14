@@ -26,6 +26,7 @@ EXTRA_DIST = \
 
 test: all
 	./tests/scripts/run_tests.sh
+	$(MAKE) -C tests check
 
 .PHONY: shellcheck
 shellcheck:

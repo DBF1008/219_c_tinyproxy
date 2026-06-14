@@ -49,6 +49,7 @@ const char* upstream_build_error_string(enum upstream_build_error ube) {
         [UBE_SUCCESS] = "",
         [UBE_OOM] = "Unable to allocate memory in upstream_build()",
         [UBE_USERLEN] = "User / pass in upstream config too long",
+        [UBE_SOCKS_CREDLEN] = "SOCKS username/password must each be 1 to 255 bytes",
         [UBE_EDOMAIN] = "Nonsense upstream none rule: empty domain",
         [UBE_INVHOST] = "Nonsense upstream rule: invalid host or port",
         [UBE_INVPARAMS] = "Nonsense upstream rule: invalid parameters",
@@ -87,6 +88,15 @@ static struct upstream *upstream_build (const char *host, int port, char *domain
                         }
                         up->ua.authstr = safestrdup (b);
                 } else {
+                        size_t su, sp;
+                        su = strlen(user);
+                        sp = pass ? strlen(pass) : 0;
+                        if (type == PT_SOCKS5) {
+                                if (su < 1 || su > 255 || sp < 1 || sp > 255) {
+                                        *ube = UBE_SOCKS_CREDLEN;
+                                        goto fail;
+                                }
+                        }
                         up->ua.user = safestrdup (user);
                         up->pass = safestrdup (pass);
                 }
